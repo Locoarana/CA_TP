@@ -2,10 +2,17 @@ import os
 import keyboard
 from colorama import Fore
 from colorama import Style
+from pynput.keyboard import Key, Listener
+
+
+def limpiar_pantalla():
+    if os.name == "posix":
+        os.system("clear")
+    elif os.name == "ce" or os.name == "nt" or os.name == "dos":
+        os.system("cls")
 
 
 def juego():
-
     # datos del mapa
     filas = 9
     columnas = 9
@@ -19,26 +26,12 @@ def juego():
     bot_coords = [0, round(columnas / 2)]
     jugador_coords = [filas - 1, round(columnas / 2)]
 
-    '''mapa = [[] for x in range(filas)]
-
-    for i in range(filas):
-        col = []
-        for j in range(columnas):
-            col.append(casilla_libre)
-        mapa[i] = col'''
-
     # creacion del mapa inicial
     mapa = [[casilla_libre for y in range(columnas)] for x in range(filas)]
 
     # dibujamos al bot y al jugador en el mapa
     mapa[bot_coords[0]][bot_coords[1]] = char_bot
     mapa[jugador_coords[0]][jugador_coords[1]] = char_jugador
-
-    def limpiar_pantalla():
-        if os.name == "posix":
-            os.system("clear")
-        elif os.name == "ce" or os.name == "nt" or os.name == "dos":
-            os.system("cls")
 
     def mover_jugador(movimiento):
         mapa[jugador_coords[0]][jugador_coords[1]] = casilla_libre
@@ -83,30 +76,40 @@ def juego():
     limpiar_pantalla()
     dibujar_mapa()
 
-    while True:
-        if keyboard.read_key() == "flecha abajo":
-            if es_movimiento_valido(jugador_coords[0] + 1, jugador_coords[1]):
-                limpiar_pantalla()
-                mover_jugador("abajo")
-                dibujar_mapa()
-        elif keyboard.read_key() == "flecha arriba":
+    def on_press(key):
+        if key == Key.esc:
+            return False
+        if str(key) == "'w'":
             if es_movimiento_valido(jugador_coords[0] - 1, jugador_coords[1]):
                 limpiar_pantalla()
                 mover_jugador("arriba")
                 dibujar_mapa()
-        elif keyboard.read_key() == "flecha izquierda":
+
+        if str(key) == "'s'":
+            if es_movimiento_valido(jugador_coords[0] + 1, jugador_coords[1]):
+                limpiar_pantalla()
+                mover_jugador("abajo")
+                dibujar_mapa()
+
+        if str(key) == "'a'":
             if es_movimiento_valido(jugador_coords[0], jugador_coords[1] - 1):
                 limpiar_pantalla()
                 mover_jugador("izquierda")
                 dibujar_mapa()
-        elif keyboard.read_key() == "flecha derecha":
+
+        if str(key) == "'d'":
             if es_movimiento_valido(jugador_coords[0], jugador_coords[1] + 1):
                 limpiar_pantalla()
                 mover_jugador("derecha")
                 dibujar_mapa()
 
+    with Listener(on_press=on_press) as listener:
+        listener.join()
 
+
+# Pantalla inicio
 while True:
+    limpiar_pantalla()
     print("Bienvenido!")
     print("Presione 'y' para iniciar el juego o ESC para salir...")
     if keyboard.read_key() == "y":
